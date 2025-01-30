@@ -1,6 +1,8 @@
 interface Env {
 	CORS_ALLOW_ORIGIN: string;
 	HELIUS_API_KEY: string;
+	HELIUS_WS_URL: string;
+	HELIUS_BASE_URL: string;
 }
 
 export default {
@@ -27,6 +29,7 @@ export default {
 			corsHeaders['Access-Control-Allow-Origin'] = '*'
 		}
 
+		// Handle OPTIONS request
 		if (request.method === "OPTIONS") {
 			return new Response(null, {
 				status: 200,
@@ -34,16 +37,17 @@ export default {
 			});
 		}
 
+		// Handle WebSocket upgrade
 		const upgradeHeader = request.headers.get('Upgrade')
-
 		if (upgradeHeader || upgradeHeader === 'websocket') {
-			return await fetch(`${env.HELIUS_BASE_URI}?api-key=${env.HELIUS_API_KEY}`, request)
+			return await fetch(`${env.HELIUS_WS_URL}?api-key=${env.HELIUS_API_KEY}`, request)
 		}
 
-
+		// Handle regular HTTP requests
 		const { pathname, search } = new URL(request.url)
 		const payload = await request.text();
-		const proxyRequest = new Request(`https://${pathname === '/' ? 'mainnet.helius-rpc.com' : 'api.helius.xyz'}${pathname}?api-key=${env.HELIUS_API_KEY}${search ? `&${search.slice(1)}` : ''}`, {
+		
+		const proxyRequest = new Request(`${env.HELIUS_BASE_URL}${pathname}?api-key=${env.HELIUS_API_KEY}${search ? `&${search.slice(1)}` : ''}`, {
 			method: request.method,
 			body: payload || null,
 			headers: {
