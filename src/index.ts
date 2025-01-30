@@ -21,12 +21,16 @@ export default {
 			"Access-Control-Allow-Headers": "*",
 		}
 		if (supportedDomains) {
-			const origin = request.headers.get('Origin')
-			if (origin && supportedDomains.includes(origin)) {
-				corsHeaders['Access-Control-Allow-Origin'] = origin
-			}
+		    const origin = request.headers.get('Origin')
+		    if (!origin || !supportedDomains.includes(origin)) {
+		        return new Response('Origin not allowed', {
+		            status: 403,
+		            headers: corsHeaders
+		        });
+		    }
+		    corsHeaders['Access-Control-Allow-Origin'] = origin
 		} else {
-			corsHeaders['Access-Control-Allow-Origin'] = '*'
+		    corsHeaders['Access-Control-Allow-Origin'] = '*'
 		}
 
 		// Handle OPTIONS request
