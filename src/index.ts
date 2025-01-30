@@ -47,17 +47,7 @@ export default {
 		const { pathname, search } = new URL(request.url)
 		const payload = await request.text();
 		
-		// Ensure we have a clean base URL without trailing slash
-		const baseUrl = env.HELIUS_BASE_URL.endsWith('/') 
-			? env.HELIUS_BASE_URL.slice(0, -1) 
-			: env.HELIUS_BASE_URL;
-
-		// Construct the URL, ensuring we don't double up on slashes
-		const proxyUrl = pathname === '/' 
-			? `${baseUrl}?api-key=${env.HELIUS_API_KEY}${search ? `&${search.slice(1)}` : ''}`
-			: `${baseUrl}${pathname}?api-key=${env.HELIUS_API_KEY}${search ? `&${search.slice(1)}` : ''}`;
-		
-		const proxyRequest = new Request(proxyUrl, {
+		const proxyRequest = new Request(`${env.HELIUS_BASE_URL}${pathname}?api-key=${env.HELIUS_API_KEY}${search ? `&${search.slice(1)}` : ''}`, {
 			method: request.method,
 			body: payload || null,
 			headers: {
